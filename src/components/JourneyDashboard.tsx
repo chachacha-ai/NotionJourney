@@ -318,7 +318,7 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
 
     return (
         <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-emerald-100 flex justify-center">
-            <div className="w-full max-w-[768px] h-[100dvh] bg-[#F8FAFC] shadow-2xl relative overflow-hidden transition-colors duration-300">
+            <div className="w-full max-w-[768px] h-[100dvh] bg-[#F4F7F4] shadow-2xl relative overflow-hidden transition-colors duration-300">
                 <TopBar
                     title={metadata.city ? `${metadata.title} - ${metadata.city}` : metadata.title}
                     gmtOffset={metadata.timezone || '+8'}
