@@ -55,7 +55,8 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                             className="object-cover"
                         />
                         <div className="absolute top-4 left-4">
-                            <span className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl text-xs font-bold text-red-600 shadow-sm">
+                            {/* 修改 1: 時間標籤改為綠色文字 */}
+                            <span className="bg-white/90 backdrop-blur-md px-3 py-1.5 rounded-2xl text-xs font-bold text-emerald-700 shadow-sm">
                                 {timeStr}
                             </span>
                         </div>
@@ -66,7 +67,8 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                     <div className="flex items-start justify-between mb-3">
                         <div className="space-y-1">
                             {!item.img && (
-                                <span className="text-sm font-black text-red-600 tracking-tighter block mb-1">
+                                /* 修改 2: 無圖片時的時間改為綠色 */
+                                <span className="text-sm font-black text-emerald-700 tracking-tighter block mb-1">
                                     {timeStr}
                                 </span>
                             )}
@@ -77,7 +79,8 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                                 </p>
                             )}
                         </div>
-                        <div className="bg-red-50/80 backdrop-blur-sm p-2.5 rounded-2xl text-red-600 shrink-0 ml-4">
+                        {/* 修改 3: 右側 Icon 背景改為淺綠色，圖示改為深綠色 */}
+                        <div className="bg-emerald-50/80 backdrop-blur-sm p-2.5 rounded-2xl text-emerald-700 shrink-0 ml-4">
                             <CategoryIcon category={item.category} />
                         </div>
                     </div>
@@ -87,7 +90,8 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                             asChild
                             variant="outline"
                             onClick={(e) => e.stopPropagation()}
-                            className="w-full justify-center gap-2 text-xs font-bold rounded-2xl h-11 border-blue-100 bg-blue-50/50 text-blue-600 hover:bg-blue-100 hover:text-blue-700 hover:border-blue-200 transition-all active:scale-[0.98]"
+                            /* 修改 4: 導航按鈕全部改為 emerald 色系 */
+                            className="w-full justify-center gap-2 text-xs font-bold rounded-2xl h-11 border-emerald-100 bg-emerald-50/50 text-emerald-700 hover:bg-emerald-100 hover:text-emerald-800 hover:border-emerald-200 transition-all active:scale-[0.98]"
                         >
                             <a href={resolveMapUrl(item.maps)} target="_blank">
                                 <MapPin className="w-3.5 h-3.5" />
