@@ -41,7 +41,7 @@ export const TimeZoneWidget: React.FC<TimeZoneWidgetProps> = ({ gmtOffset }) => 
 
     return (
         // h-full 確保它會填滿格子，flex-col justify-between 確保上下分佈均勻
-        <div className="bg-slate-800 text-white rounded-2xl p-4 shadow-sm border border-slate-700 h-full flex flex-col justify-between relative overflow-hidden group">
+        <div className="bg-slate-800 text-white rounded-2xl p-4 shadow-sm border border-slate-700 h-full min-h-[140px] flex flex-col justify-between relative overflow-hidden group">
             {/* 背景裝飾 (不佔空間) */}
             <div className="absolute -right-4 -top-4 w-20 h-20 bg-blue-500/20 rounded-full blur-2xl group-hover:bg-blue-500/30 transition-all" />
 
