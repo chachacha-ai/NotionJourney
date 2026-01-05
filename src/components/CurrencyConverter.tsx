@@ -13,26 +13,26 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ targetCurrency })
     const [loading, setLoading] = useState(true);
 
     // 模擬或抓取匯率，這裡為示範先使用固定匯率映射，
-    // 實際專案可替換為 fetch('https://api.exchangerate-api.com/v4/latest/TWD')
+    // 實際專案可替換為 fetch('https://api.exchangerate-api.com/v4/latest/HKD')
     useEffect(() => {
         // 簡單的匯率表 (NTD 為基準)
-        // 1 TWD = X TargetCurrency
-        // 範例：1 TWD = 4.6 JPY (約 0.217 NTD/JPY)
-        // 為了精確，我們希望能獲取 "1 TargetCurrency = ? TWD"
+        // 1 HKD = X TargetCurrency
+        // 範例：1 HKD = 4.6 JPY (約 0.217 NTD/JPY)
+        // 為了精確，我們希望能獲取 "1 TargetCurrency = ? HKD"
 
-        // 這裡使用一個免費的公開 API 抓取 TWD 對目標幣別的匯率
+        // 這裡使用一個免費的公開 API 抓取 HKD 對目標幣別的匯率
         const fetchRate = async () => {
             try {
                 const res = await fetch(`https://api.exchangerate-api.com/v4/latest/${targetCurrency}`);
                 const data = await res.json();
-                const twdRate = data.rates.TWD; // 1 Target = ? TWD
-                setRate(twdRate);
+                const HKDRate = data.rates.HKD; // 1 Target = ? HKD
+                setRate(HKDRate);
             } catch (e) {
                 console.error("Failed to fetch rate", e);
                 // Fallback for demo if API fails or rate limited
-                if (targetCurrency === 'JPY') setRate(0.22);
-                else if (targetCurrency === 'USD') setRate(31.5);
-                else if (targetCurrency === 'KRW') setRate(0.024);
+                if (targetCurrency === 'JPY') setRate(0.05);
+                else if (targetCurrency === 'USD') setRate(7.8);
+                else if (targetCurrency === 'EUR') setRate(9.1);
                 else setRate(1);
             } finally {
                 setLoading(false);
@@ -69,7 +69,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ targetCurrency })
                 <ArrowRightLeft className="w-5 h-5 text-gray-400 mt-5" />
 
                 <div className="flex-1 text-right">
-                    <label className="text-xs text-gray-500 block mb-1">NTD</label>
+                    <label className="text-xs text-gray-500 block mb-1">HKD</label>
                     <div className="text-2xl font-bold text-gray-800">
                         ${converted}
                     </div>
@@ -80,7 +80,7 @@ const CurrencyConverter: React.FC<CurrencyConverterProps> = ({ targetCurrency })
                 <p className="text-[10px] text-gray-400 mt-2 text-center">更新匯率中...</p>
             ) : (
                 <p className="text-[10px] text-gray-400 mt-2 text-center">
-                    即時匯率: 1 {targetCurrency} ≈ {rate} TWD
+                    即時匯率: 1 {targetCurrency} ≈ {rate} HKD
                 </p>
             )}
         </div>
