@@ -9,7 +9,7 @@ interface CurrencyWidgetProps {
 
 export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRate, currencyCode }) => {
     const [amount, setAmount] = useState<string>('');
-    const [exchangeRate, setExchangeRate] = useState<number>(initialRate || 0.21);
+    const [exchangeRate, setExchangeRate] = useState<number>(initialRate || 9.1);
     const [isLoading, setIsLoading] = useState(false);
 
     // Fetch rate logic
@@ -19,15 +19,15 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
 
             setIsLoading(true);
             try {
-                // Fetch TWD base
-                const res = await fetch(`https://open.er-api.com/v6/latest/TWD`);
+                // Fetch HKD base
+                const res = await fetch(`https://open.er-api.com/v6/latest/HKD`);
                 const data = await res.json();
 
-                // 1 TWD = X Target => 1 Target = 1/X TWD
+                // 1 HKD = X Target => 1 Target = 1/X HKD
                 const rateToTarget = data.rates[currencyCode.toUpperCase()];
                 if (rateToTarget) {
-                    const priceInTwd = 1 / rateToTarget;
-                    setExchangeRate(priceInTwd);
+                    const priceInHkd = 1 / rateToTarget;
+                    setExchangeRate(priceInHkd);
                 }
             } catch (e) {
                 console.error("Rate fetch failed", e);
@@ -55,14 +55,14 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
                     <span>匯率計算</span>
                 </div>
                 <div className="text-[10px] text-slate-500 font-mono">
-                    1 {currencyCode} ≈ {exchangeRate.toFixed(3)} TWD
+                    1 {currencyCode} ≈ {exchangeRate.toFixed(3)} HKD
                 </div>
             </div>
 
             <div className="flex-1 flex items-center justify-between gap-2">
                 <div className="flex-1 min-w-0">
                     <div className="flex items-baseline gap-0.5">
-                        <span className="text-xs font-medium text-slate-500">{currencyCode === 'JPY' ? '¥' : '$'}</span>
+                        <span className="text-xs font-medium text-slate-500">{currencyCode === 'EUR' ? '€' : '$'}</span>
                         <input
                             type="text"
                             inputMode="decimal"
@@ -90,7 +90,7 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
 
                 <div className="flex-1 min-w-0 text-right">
                     <div className="flex items-baseline justify-end gap-0.5">
-                        <span className="text-xs font-medium text-slate-500">NT$</span>
+                        <span className="text-xs font-medium text-slate-500">HK$</span>
                         <span className={cn(
                             "font-bold text-emerald-400 tracking-tight truncate font-mono transition-all duration-200",
                             calculated.length >= 8 ? "text-lg" :
