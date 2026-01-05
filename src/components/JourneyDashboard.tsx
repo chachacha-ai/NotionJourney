@@ -1,21 +1,17 @@
 'use client';
 
 import React, { useState, useMemo, useEffect } from 'react';
-import { format, parseISO, isSameDay, isBefore, startOfDay, addDays } from 'date-fns';
+import { format, parseISO, isSameDay, isBefore } from 'date-fns';
 import { zhTW } from 'date-fns/locale';
-import { ChevronDown, Calendar } from 'lucide-react';
+import { ChevronDown, Calendar, ShieldAlert } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 import { TripMetadata, ItineraryItem } from '@/lib/notion';
 import { parseNotionDateTime, cn } from '@/lib/utils';
 import { JourneyCard } from './JourneyCard';
-// import { LoginScreen } from './LoginScreen'; // Removed
 import { TopBar } from './TopBar';
-// import Cookies from 'js-cookie'; // Removed
 import { BottomNav, TabType } from './BottomNav';
 import { CurrencyWidget } from './CurrencyWidget';
-import { TimeZoneWidget } from './TimeZoneWidget';
-import { Phone, ShieldAlert } from 'lucide-react';
 import { NotionBlockRenderer } from './NotionBlockRenderer';
 import { PullToRefresh } from './PullToRefresh';
 
@@ -27,11 +23,8 @@ interface JourneyDashboardProps {
     requiredPassword?: string | null;
 }
 
-// Helper to ensure we treat strings as local time (stripping timezones)
 const toFloatingDate = (dateStr: string): Date => {
     const { dateTimeStr } = parseNotionDateTime(dateStr);
-    // dateTimeStr is "YYYY-MM-DD" or "YYYY-MM-DD HH:mm"
-    // If we pass this to parseISO (without Z), it create a local date
     return parseISO(dateTimeStr);
 };
 
@@ -40,27 +33,21 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
 
     const [activeTab, setActiveTab] = useState<TabType>('home');
     const [expandedDays, setExpandedDays] = useState<Record<string, boolean>>({});
-
-    // Current time for "Now" logic
-    // In a real app, you might want this to update every minute, but for now fixed on mount is fine
     const [now, setNow] = useState<Date | null>(null);
 
     useEffect(() => {
         setNow(new Date());
     }, []);
 
-    // Sort by date (already sorted in notion.ts but good safety)
     const sortedJourneys = useMemo(() =>
         [...itinerary].sort((a, b) => {
             return toFloatingDate(a.date).getTime() - toFloatingDate(b.date).getTime();
         }),
         [itinerary]);
 
-    // Group by Day
     const groupedJourneys = useMemo(() => {
         const groups: Record<string, ItineraryItem[]> = {};
         sortedJourneys.forEach(item => {
-            // Use the notion-parsed date string YYYY-MM-DD key
             const { date } = parseNotionDateTime(item.date);
             if (!groups[date]) groups[date] = [];
             groups[date].push(item);
@@ -70,7 +57,6 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
 
     const allDates = useMemo(() => Object.keys(groupedJourneys).sort(), [groupedJourneys]);
 
-    // Initialize expanded state for Today
     useEffect(() => {
         if (!now) return;
         const todayKey = format(now, 'yyyy-MM-dd');
@@ -80,13 +66,11 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                 [todayKey]: true
             }));
         } else {
-            // If today not in list, maybe expand the first upcoming day?
-            // For now, let's just expand the first day if nothing else matches
             if (allDates.length > 0 && !Object.keys(expandedDays).length) {
                 setExpandedDays({ [allDates[0]]: true });
             }
         }
-    }, [allDates, now]); // Run when dates ready or now loaded
+    }, [allDates, now]);
 
     const toggleDay = (dateStr: string) => {
         setExpandedDays(prev => ({
@@ -95,27 +79,23 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
         }));
     };
 
-    // -- Render Logic --
-
     // 1. UNIFIED HOME TAB
     const renderHome = () => {
         return (
             <div className="pb-8 pt-4">
-                {/* Widgets Row */}
                 <div className="mx-4 mb-6 flex gap-4 h-28">
                     <div className="w-full">
                         <CurrencyWidget
-                            currencyCode={metadata.exchangeRate || 'JPY'}
+                            currencyCode={metadata.exchangeRate || 'EUR'}
                         />
                     </div>
                 </div>
 
-                {/* The List Logic */}
                 <div className="px-4 space-y-4">
                     {allDates.map((dateStr, index) => {
                         const isExpanded = !!expandedDays[dateStr];
                         const dayItems = groupedJourneys[dateStr];
-                        const dateObj = parseISO(dateStr); // safe for YYYY-MM-DD
+                        const dateObj = parseISO(dateStr);
                         const isToday = now ? isSameDay(dateObj, now) : false;
 
                         return (
@@ -123,10 +103,10 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                 key={dateStr}
                                 className={cn(
                                     "rounded-2xl transition-all duration-300 overflow-hidden border shadow-sm",
-                                    isExpanded ? "bg-white/60 border-blue-100 shadow-md" : "bg-white/40 border-white/60 hover:bg-white/60"
+                                    // 修改 1: 展開時的邊框改為綠色 (border-emerald-100)
+                                    isExpanded ? "bg-white/60 border-emerald-100 shadow-md" : "bg-white/40 border-white/60 hover:bg-white/60"
                                 )}
                             >
-                                {/* Header / Big Card Trigger */}
                                 <button
                                     onClick={() => toggleDay(dateStr)}
                                     className="w-full p-4 flex items-center justify-between"
@@ -135,19 +115,22 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className={cn(
                                                 "text-xs font-bold uppercase tracking-widest",
-                                                isToday ? "text-blue-600" : "text-slate-400"
+                                                // 修改 2: 今天文字改為綠色
+                                                isToday ? "text-emerald-600" : "text-slate-400"
                                             )}>
                                                 第 {index + 1} 天
                                             </span>
                                             {isToday && (
-                                                <span className="bg-blue-100 text-blue-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                // 修改 3: 今天標籤改為綠底綠字 (bg-emerald-100 text-emerald-600)
+                                                <span className="bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
                                                     今天
                                                 </span>
                                             )}
                                         </div>
                                         <h3 className={cn(
                                             "text-lg font-semibold",
-                                            isToday ? "text-blue-900" : "text-slate-700"
+                                            // 修改 4: 標題文字改為深綠色
+                                            isToday ? "text-emerald-900" : "text-slate-700"
                                         )}>
                                             {format(dateObj, 'MMM do', { locale: zhTW })} - {format(dateObj, 'EEEE', { locale: zhTW })}
                                         </h3>
@@ -159,14 +142,14 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                         </span>
                                         <div className={cn(
                                             "p-1 rounded-full transition-transform duration-300",
-                                            isExpanded ? "bg-blue-50 text-blue-600 rotate-180" : "text-slate-400"
+                                            // 修改 5: 箭頭改為綠色
+                                            isExpanded ? "bg-emerald-50 text-emerald-600 rotate-180" : "text-slate-400"
                                         )}>
                                             <ChevronDown size={20} />
                                         </div>
                                     </div>
                                 </button>
 
-                                {/* Expanded Content */}
                                 <AnimatePresence>
                                     {isExpanded && (
                                         <motion.div
@@ -176,20 +159,16 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                             transition={{ duration: 0.3, ease: "easeInOut" }}
                                         >
                                             <div className="px-4 pb-4 pt-0 space-y-3 border-t border-slate-100/50 mt-1">
-                                                <div className="h-2" /> {/* Spacer */}
+                                                <div className="h-2" />
                                                 {dayItems.map(item => {
                                                     const itemTime = toFloatingDate(item.date);
-                                                    // Check if item time is strictly before "Now" time
-                                                    // This requires careful comparison of floating date vs real date
-                                                    // If "now" is 2026-01-02 14:00 local, and item is 2026-01-02 09:00 (floating), it is past.
                                                     const isPast = now ? isBefore(itemTime, now) : false;
-
                                                     return (
                                                         <JourneyCard
                                                             key={item.id}
                                                             item={item}
                                                             isPast={isPast}
-                                                            hideImage={true} // Only icons, no images in list
+                                                            hideImage={true}
                                                         />
                                                     );
                                                 })}
@@ -205,12 +184,10 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
         );
     };
 
-    // 3. FILTERED TABS
     const renderFiltered = (filterType: string | 'visit_group') => {
         let filteredItems = sortedJourneys;
 
         if (filterType === 'visit_group') {
-            // 'visit', 'shopping', 'restaurant' are mapped to Visit tab
             filteredItems = sortedJourneys.filter(j => ['visit', 'shopping', 'restaurant'].includes(j.category));
         } else {
             filteredItems = sortedJourneys.filter(j => j.category === filterType);
@@ -258,8 +235,6 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
         );
     };
 
-    // 4. INFO TAB (Placeholder content or adapted)
-    // 4. INFO TAB
     const renderInfo = () => (
         <div className="pb-8 pt-4 px-4">
             {metadata.infoPage ? (
@@ -275,14 +250,11 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
         </div>
     );
 
-
-
-    // Swipe Logic
     const TABS: TabType[] = ['home', 'visit', 'hotel', 'transport', 'info'];
     const minSwipeDistance = 50;
     const [touchStart, setTouchStart] = useState<number | null>(null);
     const [touchEnd, setTouchEnd] = useState<number | null>(null);
-    const [touchStartY, setTouchStartY] = useState<number | null>(null); // To check vertical dominance
+    const [touchStartY, setTouchStartY] = useState<number | null>(null);
 
     const onTouchStart = (e: React.TouchEvent) => {
         setTouchEnd(null);
@@ -294,7 +266,6 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
         setTouchEnd(e.targetTouches[0].clientX);
     };
 
-    // Navigation Direction for Animation
     const [direction, setDirection] = useState(0);
 
     const variants = {
@@ -323,26 +294,21 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
 
     const onTouchEnd = (e: React.TouchEvent) => {
         if (!touchStart || !touchEnd || !touchStartY) return;
-
         const distance = touchStart - touchEnd;
         const isLeftSwipe = distance > minSwipeDistance;
         const isRightSwipe = distance < -minSwipeDistance;
-
         const verticalDistance = Math.abs(touchStartY - e.changedTouches[0].clientY);
         const horizontalDistance = Math.abs(distance);
-
         if (verticalDistance > horizontalDistance) return;
 
         if (isLeftSwipe || isRightSwipe) {
             const currentIndex = TABS.indexOf(activeTab);
             let nextIndex = currentIndex;
-
             if (isLeftSwipe && currentIndex < TABS.length - 1) {
                 nextIndex = currentIndex + 1;
             } else if (isRightSwipe && currentIndex > 0) {
                 nextIndex = currentIndex - 1;
             }
-
             if (nextIndex !== currentIndex) {
                 setDirection(nextIndex > currentIndex ? 1 : -1);
                 setActiveTab(TABS[nextIndex]);
@@ -351,11 +317,11 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 flex justify-center">
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-emerald-100 flex justify-center">
             <div className="w-full max-w-[768px] h-[100dvh] bg-[#F8FAFC] shadow-2xl relative overflow-hidden transition-colors duration-300">
                 <TopBar
                     title={metadata.city ? `${metadata.title} - ${metadata.city}` : metadata.title}
-                    gmtOffset={metadata.timezone || '+9'}
+                    gmtOffset={metadata.timezone || '+8'}
                     subtitle={
                         metadata.startDate && metadata.endDate
                             ? format(parseISO(metadata.startDate), 'MMM do', { locale: zhTW }) + ' - ' + format(parseISO(metadata.endDate), 'MMM do', { locale: zhTW })
