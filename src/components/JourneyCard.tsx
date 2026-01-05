@@ -69,9 +69,8 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
     return (
         <div className={cn(
-            // 修改重點 1: 改回白底 (bg-white)，加上極淡的綠色邊框 (border-emerald-100)
-            // 這樣既有層次，又不會黑壓壓一片
-            "relative mb-4 rounded-2xl bg-white border border-emerald-100/60 shadow-md transition-all duration-300 overflow-hidden group hover:shadow-lg hover:border-emerald-200",
+            // 把 bg-white 換成 bg-gradient-to-br from-white to-emerald-50
+            "relative mb-4 rounded-2xl bg-gradient-to-br from-white to-emerald-50 border border-emerald-100/50 shadow-md transition-all duration-300 overflow-hidden group hover:shadow-lg hover:border-emerald-200",
             isPast && "opacity-60 grayscale-[0.5]"
         )}>
             {item.img && !hideImage && (
