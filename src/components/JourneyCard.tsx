@@ -7,7 +7,6 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, Dialog
 import { Button } from '@/components/ui/button';
 import { NotionBlockRenderer } from '@/components/NotionBlockRenderer';
 
-// Mapping category strings (from Notion select) to Icons
 const TYPE_ICONS: Record<string, any> = {
     transport: Plane,
     hotel: Hotel,
@@ -16,12 +15,13 @@ const TYPE_ICONS: Record<string, any> = {
     shopping: ShoppingBag,
 };
 
+// 修改 1: 調整圖示的配色，讓它們在深綠色底上好看一點 (使用淺色背景)
 const TYPE_COLORS: Record<string, string> = {
-    transport: 'bg-blue-100 text-blue-600',
-    hotel: 'bg-indigo-100 text-indigo-600',
-    visit: 'bg-emerald-100 text-emerald-600',
-    restaurant: 'bg-orange-100 text-orange-600',
-    shopping: 'bg-pink-100 text-pink-600',
+    transport: 'bg-blue-100 text-blue-700',
+    hotel: 'bg-indigo-100 text-indigo-700',
+    visit: 'bg-emerald-100 text-emerald-700',
+    restaurant: 'bg-orange-100 text-orange-700',
+    shopping: 'bg-pink-100 text-pink-700',
 };
 
 interface JourneyCardProps {
@@ -32,22 +32,18 @@ interface JourneyCardProps {
 
 export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, hideImage = false }) => {
     const CategoryIcon = TYPE_ICONS[item.category] || Info;
-    const colorClass = TYPE_COLORS[item.category] || 'bg-gray-100 text-gray-600';
+    const colorClass = TYPE_COLORS[item.category] || 'bg-slate-100 text-slate-600';
 
-    // Helper to render the priority icon: item.icon (Notion) > Category Icon
     const renderIcon = () => {
         if (item.icon) {
-            // Check if it's a URL (image) or Emoji
             if (item.icon.startsWith('http') || item.icon.startsWith('data:')) {
                 return <img src={item.icon} alt="" className="w-4 h-4 object-contain" />;
             }
-            // Assume it's an emoji char
             return <span className="text-sm leading-none">{item.icon}</span>;
         }
         return <CategoryIcon size={16} />;
     };
 
-    // State for page content
     const [blocks, setBlocks] = useState<any[] | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -67,18 +63,16 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
         }
     };
 
-
-
     const dateObj = parseISO(item.date);
     const timeStr = format(dateObj, 'HH:mm');
     const dateStr = format(dateObj, 'yyyy-MM-dd');
 
     return (
         <div className={cn(
-            "relative mb-4 rounded-2xl bg-white/80 border border-white/40 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden group",
+            // 修改 2: 背景改成深綠色 (!bg-emerald-800)，移除 bg-white
+            "relative mb-4 rounded-2xl !bg-emerald-800 border border-emerald-700/50 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden group",
             isPast && "opacity-60 grayscale-[0.5]"
         )}>
-            {/* List View Cover Image */}
             {item.img && !hideImage && (
                 <div className="h-20 w-full relative overflow-hidden">
                     <img
@@ -86,7 +80,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
+                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/80 to-transparent" />
                 </div>
             )}
 
@@ -94,11 +88,14 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                 if (open) fetchBlocks();
             }}>
                 <DialogTrigger asChild>
-                    <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-white/50 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
+                    {/* 修改 3: Hover 效果改成深綠色變亮 */}
+                    <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-white/10 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
                         {/* Time & Line */}
                         <div className="flex flex-col items-center min-w-[3rem]">
-                            <span className="text-xs font-bold text-slate-500 font-mono">{timeStr}</span>
-                            <div className="flex-1 w-0.5 bg-slate-200 my-1 rounded-full min-h-[1.5rem]" />
+                            {/* 修改 4: 時間改為淺綠色 (text-emerald-200) */}
+                            <span className="text-xs font-bold text-emerald-200 font-mono">{timeStr}</span>
+                            {/* 修改 5: 線條改為深綠色 (bg-emerald-600) */}
+                            <div className="flex-1 w-0.5 bg-emerald-600/50 my-1 rounded-full min-h-[1.5rem]" />
                         </div>
 
                         {/* Content */}
@@ -109,7 +106,8 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         <div className={cn("inline-flex items-center justify-center p-1.5 rounded-lg shadow-sm shrink-0", colorClass)}>
                                             {renderIcon()}
                                         </div>
-                                        <h3 className="font-bold text-slate-800 text-base leading-tight">{item.title}</h3>
+                                        {/* 修改 6: 標題改為白色 (text-white) */}
+                                        <h3 className="font-bold text-white text-base leading-tight">{item.title}</h3>
                                     </div>
                                 </div>
                                 {item.maps && (
@@ -118,7 +116,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         target="_blank"
                                         rel="noreferrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        className="text-slate-400 hover:text-blue-500 transition-colors p-1"
+                                        className="text-emerald-300 hover:text-emerald-100 transition-colors p-1"
                                     >
                                         <ExternalLink size={18} />
                                     </a>
@@ -134,7 +132,6 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         <DialogDescription>{dateStr}</DialogDescription>
                     </DialogHeader>
 
-                    {/* Dialog Cover */}
                     {item.img ? (
                         <div className="h-48 w-full relative">
                             <img src={item.img} alt={item.title} className="w-full h-full object-cover" />
@@ -163,11 +160,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                             <span className="text-sm border-l border-slate-200 pl-2">{dateStr}</span>
                         </div>
 
-
-
-                        {/* Content Section */}
                         <div className="text-slate-600 leading-relaxed text-sm">
-                            {/* Always show description if available */}
                             {item.description && (
                                 <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100">{item.description}</div>
                             )}
@@ -180,15 +173,13 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                 </div>
                             )}
 
-                            {/* Render Blocks */}
                             {blocks && blocks.length > 0 && (
                                 <NotionBlockRenderer blocks={blocks} />
                             )}
                         </div>
 
-                        {/* Button Map */}
                         {item.maps && (
-                            <Button asChild className="w-full rounded-xl gap-2 font-bold h-12 text-base shadow-lg shadow-blue-200/50 bg-blue-600 hover:bg-blue-700 mt-6" size="lg">
+                            <Button asChild className="w-full rounded-xl gap-2 font-bold h-12 text-base shadow-lg shadow-emerald-200/50 bg-emerald-600 hover:bg-emerald-700 mt-6" size="lg">
                                 <a href={item.maps} target="_blank" rel="noreferrer">
                                     <MapPin size={18} />
                                     開啟地圖
