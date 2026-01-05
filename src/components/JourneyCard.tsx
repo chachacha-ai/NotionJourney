@@ -15,13 +15,13 @@ const TYPE_ICONS: Record<string, any> = {
     shopping: ShoppingBag,
 };
 
-// 修改 1: 調整圖示的配色，讓它們在深綠色底上好看一點 (使用淺色背景)
+// 為了配合白底，我們讓 Icon 的背景稍微有點色彩，但不要太重
 const TYPE_COLORS: Record<string, string> = {
-    transport: 'bg-blue-100 text-blue-700',
-    hotel: 'bg-indigo-100 text-indigo-700',
-    visit: 'bg-emerald-100 text-emerald-700',
-    restaurant: 'bg-orange-100 text-orange-700',
-    shopping: 'bg-pink-100 text-pink-700',
+    transport: 'bg-blue-50 text-blue-600',
+    hotel: 'bg-indigo-50 text-indigo-600',
+    visit: 'bg-emerald-50 text-emerald-600',
+    restaurant: 'bg-orange-50 text-orange-600',
+    shopping: 'bg-pink-50 text-pink-600',
 };
 
 interface JourneyCardProps {
@@ -32,7 +32,7 @@ interface JourneyCardProps {
 
 export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, hideImage = false }) => {
     const CategoryIcon = TYPE_ICONS[item.category] || Info;
-    const colorClass = TYPE_COLORS[item.category] || 'bg-slate-100 text-slate-600';
+    const colorClass = TYPE_COLORS[item.category] || 'bg-slate-50 text-slate-500';
 
     const renderIcon = () => {
         if (item.icon) {
@@ -69,8 +69,9 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
     return (
         <div className={cn(
-            // 修改 2: 背景改成深綠色 (!bg-emerald-800)，移除 bg-white
-            "relative mb-4 rounded-2xl !bg-emerald-800 border border-emerald-700/50 shadow-sm backdrop-blur-md transition-all duration-300 overflow-hidden group",
+            // 修改重點 1: 改回白底 (bg-white)，加上極淡的綠色邊框 (border-emerald-100)
+            // 這樣既有層次，又不會黑壓壓一片
+            "relative mb-4 rounded-2xl bg-white border border-emerald-100/60 shadow-sm transition-all duration-300 overflow-hidden group hover:shadow-md hover:border-emerald-200",
             isPast && "opacity-60 grayscale-[0.5]"
         )}>
             {item.img && !hideImage && (
@@ -80,7 +81,8 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-emerald-900/80 to-transparent" />
+                    {/* 圖片遮罩改淡一點，讓圖片亮一點 */}
+                    <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
             )}
 
@@ -88,14 +90,13 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                 if (open) fetchBlocks();
             }}>
                 <DialogTrigger asChild>
-                    {/* 修改 3: Hover 效果改成深綠色變亮 */}
-                    <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-white/10 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
+                    <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-slate-50 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
                         {/* Time & Line */}
                         <div className="flex flex-col items-center min-w-[3rem]">
-                            {/* 修改 4: 時間改為淺綠色 (text-emerald-200) */}
-                            <span className="text-xs font-bold text-emerald-200 font-mono">{timeStr}</span>
-                            {/* 修改 5: 線條改為深綠色 (bg-emerald-600) */}
-                            <div className="flex-1 w-0.5 bg-emerald-600/50 my-1 rounded-full min-h-[1.5rem]" />
+                            {/* 修改重點 2: 時間改成深綠色 (text-emerald-700)，在白底上才看得清楚 */}
+                            <span className="text-xs font-bold text-emerald-700 font-mono">{timeStr}</span>
+                            {/* 修改重點 3: 中間的線條改成極淡的綠色 (bg-emerald-100) */}
+                            <div className="flex-1 w-0.5 bg-emerald-100 my-1 rounded-full min-h-[1.5rem]" />
                         </div>
 
                         {/* Content */}
@@ -106,8 +107,8 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         <div className={cn("inline-flex items-center justify-center p-1.5 rounded-lg shadow-sm shrink-0", colorClass)}>
                                             {renderIcon()}
                                         </div>
-                                        {/* 修改 6: 標題改為白色 (text-white) */}
-                                        <h3 className="font-bold text-white text-base leading-tight">{item.title}</h3>
+                                        {/* 修改重點 4: 標題改回深灰色 (text-slate-800) */}
+                                        <h3 className="font-bold text-slate-800 text-base leading-tight">{item.title}</h3>
                                     </div>
                                 </div>
                                 {item.maps && (
@@ -116,7 +117,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         target="_blank"
                                         rel="noreferrer"
                                         onClick={(e) => e.stopPropagation()}
-                                        className="text-emerald-300 hover:text-emerald-100 transition-colors p-1"
+                                        className="text-slate-300 hover:text-emerald-500 transition-colors p-1"
                                     >
                                         <ExternalLink size={18} />
                                     </a>
@@ -154,7 +155,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
                     <div className="p-6 pt-4 flex-1 overflow-y-auto">
                         <div className="flex items-center gap-2 text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-6">
-                            <div className="font-mono font-bold text-slate-700 bg-white px-2 py-1 rounded border border-slate-200">
+                            <div className="font-mono font-bold text-emerald-700 bg-emerald-50 px-2 py-1 rounded border border-emerald-100">
                                 {timeStr}
                             </div>
                             <span className="text-sm border-l border-slate-200 pl-2">{dateStr}</span>
