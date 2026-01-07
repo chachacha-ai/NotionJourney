@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { format, parseISO } from 'date-fns';
-import { Plane, Hotel, MapPin, Utensils, ShoppingBag, Info, ExternalLink } from 'lucide-react';
+import { Plane, Hotel, MapPin, Utensils, ShoppingBag, Info, ExternalLink, Paperclip } from 'lucide-react';
 import { ItineraryItem } from '@/lib/notion';
 import { cn } from '@/lib/utils';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
@@ -110,15 +110,34 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         <h3 className="font-bold text-slate-800 text-base leading-tight">{item.title}</h3>
                                     </div>
                                 </div>
+                                {/* 修改 1: 地圖連結圖示改成 MapPin */}
                                 {item.maps && (
                                     <a
                                         href={item.maps}
                                         target="_blank"
                                         rel="noreferrer"
+                                        // 加入這個 onClick 很重要，防止點擊連結時同時打開對話框
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-slate-300 hover:text-emerald-500 transition-colors p-1"
+                                        title="開啟地圖"
                                     >
-                                        <ExternalLink size={18} />
+                                        <MapPin size={18} />
+                                    </a>
+                                )}
+
+                                {/* 修改 2: 新增檔案連結 (迴紋針圖示) */}
+                                {/* 假設你的 item 裡現在有了 'file' 這個屬性 */}
+                                {item.file && (
+                                    <a
+                                        href={item.file}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        onClick={(e) => e.stopPropagation()}
+                                        // 使用跟地圖一樣的樣式，保持一致性
+                                        className="text-slate-300 hover:text-emerald-500 transition-colors p-1 ml-1"
+                                        title="開啟附件檔案"
+                                    >
+                                        <Paperclip size={18} />
                                     </a>
                                 )}
                             </div>
