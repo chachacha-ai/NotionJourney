@@ -27,7 +27,7 @@ export interface ItineraryItem {
     description: string;
     hasContent: boolean;
     icon?: string | null;
-    file?: string | null; 
+    file?: string | null;
 }
 
 function emojiToDataUrl(emoji: string): string {
@@ -81,19 +81,35 @@ export const getTripData = cache(async () => {
         fetch: (url, options) => {
             return fetch(url, {
                 ...options,
-                cache: 'no-store',
+                cache: 'no-store', // 強制不快取
             });
         },
     });
 
     const { dataSourceId, dbIcon } = await getDataSourceId(notion, databaseId);
 
-    let response;
+    // 🔥 修改點：改成「無限迴圈抓取模式」，突破 100 筆限制
+    let allResults: any[] = [];
+    let hasMore = true;
+    let nextCursor = undefined;
+
+    console.log(`[DEBUG] 開始從 Notion 搬貨...`);
+
     try {
-        // @ts-ignore
-        response = await notion.dataSources.query({
-            data_source_id: dataSourceId,
-        });
+        while (hasMore) {
+            // @ts-ignore
+            const response = await notion.dataSources.query({
+                data_source_id: dataSourceId,
+                start_cursor: nextCursor, // 從上次停的地方繼續搬
+                page_size: 100, // 每次搬 100 箱
+            });
+
+            allResults = [...allResults, ...response.results];
+            hasMore = response.has_more;
+            nextCursor = response.next_cursor;
+            
+            console.log(`[DEBUG] 這一趟搬了 ${response.results.length} 筆，目前總共: ${allResults.length} 筆`);
+        }
     } catch (error: any) {
         console.error("Notion API Error Detail:", error);
         if (error.status === 401) throw new Error("Notion API Key 無效或是未授權。");
@@ -101,11 +117,11 @@ export const getTripData = cache(async () => {
         throw error;
     }
 
-    const results = response.results as any[];
+    // 使用全部抓到的結果 (allResults)
+    const results = allResults;
 
-    // 🔍【監視器 1】總數檢查
     console.log(`[DEBUG] ========================================`);
-    console.log(`[DEBUG] Notion Raw Count: 抓到了 ${results.length} 筆資料`);
+    console.log(`[DEBUG] ✅ 搬運完成！Notion Total Count: ${results.length} 筆資料`);
 
     const configItems = results.filter(r => r.properties.type?.select?.name === 'config');
 
@@ -143,21 +159,12 @@ export const getTripData = cache(async () => {
 
     const itinerary: ItineraryItem[] = results
         .filter(r => {
-            // 🔍【監視器 2】過濾邏輯檢查
             const typeName = r.properties.type?.select?.name;
             const title = r.properties.title?.title[0]?.plain_text || 'No Title';
             
-            // 如果是 journey，印出來確認有抓到
             if (typeName === 'journey') {
-                console.log(`[DEBUG] ✅ 允許通過: ${title} (Type: journey)`);
                 return true;
             } 
-            
-            // 如果不是 journey 也不是 config，看看是不是我們要找的失蹤人口
-            if (typeName !== 'config') {
-                console.log(`[DEBUG] ❌ 被擋下的資料: ${title} | Type 是: "${typeName}"`);
-            }
-            
             return false;
         })
         .map(page => {
