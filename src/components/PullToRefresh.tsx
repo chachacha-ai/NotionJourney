@@ -23,6 +23,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefres
     const MAX_PULL = 150;
 
     const onTouchStart = (e: React.TouchEvent) => {
+        // 只有在捲動到最頂端時才啟動下拉偵測
         if (scrollRef.current && scrollRef.current.scrollTop === 0) {
             setStartY(e.touches[0].clientY);
         }
@@ -36,11 +37,7 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefres
 
         // Give some resistance
         if (scrollRef.current && scrollRef.current.scrollTop <= 0 && diff > 0) {
-            // Prevent default? Maybe not, rely on CSS overscroll-behavior if possible,
-            // but we want custom UI. 
-            // Note: Preventing default on passive listener is hard.
-
-            // Logarithmic resistance
+            // Logarithmic resistance (增加阻力感，拉起來比較舒服)
             const damped = Math.min(diff * 0.5, MAX_PULL);
             setPullDistance(damped);
         } else {
@@ -59,8 +56,9 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefres
                 if (onRefresh) {
                     await onRefresh();
                 } else {
+                    // 關鍵指令：叫 Next.js 重新抓資料
                     router.refresh();
-                    // Artificial delay for UX
+                    // 故意等待 1 秒，讓使用者看到轉圈圈，感覺有在做事
                     await new Promise(r => setTimeout(r, 1000));
                 }
             } finally {
@@ -86,8 +84,9 @@ export const PullToRefresh: React.FC<PullToRefreshProps> = ({ children, onRefres
                     transition: isRefreshing ? 'top 0.3s' : 'none'
                 }}
             >
-                <div className="bg-white/80 backdrop-blur rounded-full p-2 shadow-sm border border-slate-100">
-                    <Loader2 className={cn("text-blue-600", isRefreshing && "animate-spin")} size={24} />
+                <div className="bg-white/90 backdrop-blur rounded-full p-2 shadow-sm border border-emerald-100">
+                    {/* 修改這裡：把 text-blue-600 改成 text-emerald-600 (綠色) */}
+                    <Loader2 className={cn("text-emerald-600", isRefreshing && "animate-spin")} size={24} />
                 </div>
             </div>
 
