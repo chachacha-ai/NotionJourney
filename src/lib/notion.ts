@@ -27,7 +27,6 @@ export interface ItineraryItem {
     description: string;
     hasContent: boolean;
     icon?: string | null;
-    // 雖然你沒用到 file 欄位，但為了介面完整性保留定義
     file?: string | null; 
 }
 
@@ -77,13 +76,12 @@ export const getTripData = cache(async () => {
         throw new Error(`Missing Notion credentials.`);
     }
 
-    // 🔥 修改點 1：強制 Notion Client 不要快取
     const notion = new Client({
         auth: apiKey,
         fetch: (url, options) => {
             return fetch(url, {
                 ...options,
-                cache: 'no-store', // 👈 關鍵指令：永遠抓最新資料
+                cache: 'no-store',
             });
         },
     });
@@ -104,6 +102,11 @@ export const getTripData = cache(async () => {
     }
 
     const results = response.results as any[];
+
+    // 🔍【監視器 1】總數檢查
+    console.log(`[DEBUG] ========================================`);
+    console.log(`[DEBUG] Notion Raw Count: 抓到了 ${results.length} 筆資料`);
+
     const configItems = results.filter(r => r.properties.type?.select?.name === 'config');
 
     const countryRow = configItems.find(r => r.properties.config?.select?.name === 'country');
@@ -139,7 +142,24 @@ export const getTripData = cache(async () => {
     }
 
     const itinerary: ItineraryItem[] = results
-        .filter(r => r.properties.type?.select?.name === 'journey')
+        .filter(r => {
+            // 🔍【監視器 2】過濾邏輯檢查
+            const typeName = r.properties.type?.select?.name;
+            const title = r.properties.title?.title[0]?.plain_text || 'No Title';
+            
+            // 如果是 journey，印出來確認有抓到
+            if (typeName === 'journey') {
+                console.log(`[DEBUG] ✅ 允許通過: ${title} (Type: journey)`);
+                return true;
+            } 
+            
+            // 如果不是 journey 也不是 config，看看是不是我們要找的失蹤人口
+            if (typeName !== 'config') {
+                console.log(`[DEBUG] ❌ 被擋下的資料: ${title} | Type 是: "${typeName}"`);
+            }
+            
+            return false;
+        })
         .map(page => {
             let coverUrl = null;
             if (page.cover) {
@@ -168,10 +188,12 @@ export const getTripData = cache(async () => {
                 description: description,
                 hasContent: true,
                 icon,
-                // 如果你有加 file property，這裡可以讀取 page.properties.file?.url
             };
         })
         .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+
+    console.log(`[DEBUG] 最終 App 顯示數量: ${itinerary.length}`);
+    console.log(`[DEBUG] ========================================`);
 
     return { metadata, itinerary };
 });
@@ -182,7 +204,6 @@ export const getPasswordConfig = cache(async () => {
 
     if (!apiKey || !databaseId) return null;
 
-    // 🔥 修改點 2：密碼驗證也要強制更新
     const notion = new Client({ 
         auth: apiKey,
         fetch: (url, options) => {
@@ -218,7 +239,6 @@ export const getPageBlocks = cache(async (pageId: string) => {
     const apiKey = process.env.NOTION_API_KEY;
     if (!apiKey) throw new Error('Missing Notion API Key');
 
-    // 🔥 修改點 3：內頁內容也要強制更新
     const notion = new Client({ 
         auth: apiKey,
         fetch: (url, options) => {
