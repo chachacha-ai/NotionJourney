@@ -3,8 +3,9 @@ import { getTripData, getPasswordConfig } from '@/lib/notion';
 import SetupGuide from '@/components/SetupGuide';
 import JourneyDashboard from '@/components/JourneyDashboard';
 
-// 設定每 60 秒重新驗證一次資料 (單位：秒)
-export const revalidate = 60;
+// ☢️ 核彈指令：強制這個頁面變成動態的 (Dynamic Rendering)
+// 這會告訴 Vercel：「不要快取這個頁面，每次有人來都要重新執行一次！」
+export const dynamic = 'force-dynamic';
 
 export default async function Home() {
   const apiKey = process.env.NOTION_API_KEY;
@@ -17,6 +18,7 @@ export default async function Home() {
 
   let tripData;
   try {
+    // 這裡會去呼叫 lib/notion.ts (記得確認那邊也有加 cache: 'no-store')
     tripData = await getTripData();
   } catch (error: any) {
     console.error("Notion API Error:", error);
