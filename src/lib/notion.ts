@@ -88,25 +88,27 @@ export const getTripData = cache(async () => {
 
     const { dataSourceId, dbIcon } = await getDataSourceId(notion, databaseId);
 
-    // 🔥 修改點：改成「無限迴圈抓取模式」，突破 100 筆限制
+    // 🔥 修改點：定義好型別，避免 TypeScript 報錯
     let allResults: any[] = [];
     let hasMore = true;
-    let nextCursor = undefined;
+    let nextCursor: string | undefined = undefined; // 這裡明確定義型別
 
-    console.log(`[DEBUG] 開始從 Notion 搬貨...`);
+    console.log(`[DEBUG] 開始從 Notion 搬貨 (分頁模式)...`);
 
     try {
         while (hasMore) {
             // @ts-ignore
             const response = await notion.dataSources.query({
                 data_source_id: dataSourceId,
-                start_cursor: nextCursor, // 從上次停的地方繼續搬
-                page_size: 100, // 每次搬 100 箱
+                start_cursor: nextCursor, // 這裡現在安全了
+                page_size: 100, 
             });
 
             allResults = [...allResults, ...response.results];
             hasMore = response.has_more;
-            nextCursor = response.next_cursor;
+            
+            // 🔧 修正點：如果 next_cursor 是 null，就轉成 undefined
+            nextCursor = response.next_cursor ?? undefined;
             
             console.log(`[DEBUG] 這一趟搬了 ${response.results.length} 筆，目前總共: ${allResults.length} 筆`);
         }
@@ -117,7 +119,6 @@ export const getTripData = cache(async () => {
         throw error;
     }
 
-    // 使用全部抓到的結果 (allResults)
     const results = allResults;
 
     console.log(`[DEBUG] ========================================`);
