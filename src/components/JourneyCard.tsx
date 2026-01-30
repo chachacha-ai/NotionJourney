@@ -1,8 +1,8 @@
 import React, { useState } from 'react';
-import { format, parseISO } from 'date-fns';
-import { Plane, Hotel, MapPin, Utensils, ShoppingBag, Info, ExternalLink, Paperclip } from 'lucide-react';
+import { format, parseISO, isValid } from 'date-fns';
+import { Plane, Hotel, MapPin, Utensils, ShoppingBag, Info, ExternalLink } from 'lucide-react';
 import { ItineraryItem } from '@/lib/notion';
-import { cn } from '@/lib/utils';
+import { cn, parseNotionDateTime } from '@/lib/utils';
 import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { NotionBlockRenderer } from '@/components/NotionBlockRenderer';
@@ -15,7 +15,6 @@ const TYPE_ICONS: Record<string, any> = {
     shopping: ShoppingBag,
 };
 
-// 為了配合白底，我們讓 Icon 的背景稍微有點色彩，但不要太重
 const TYPE_COLORS: Record<string, string> = {
     transport: 'bg-blue-50 text-blue-600',
     hotel: 'bg-indigo-50 text-indigo-600',
@@ -63,13 +62,26 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
         }
     };
 
-    const dateObj = parseISO(item.date);
-    const timeStr = format(dateObj, 'HH:mm');
-    const dateStr = format(dateObj, 'yyyy-MM-dd');
+    // --- 安全日期處理區 (防當機) ---
+    let timeStr = '--:--';
+    let dateStr = '----/--/--';
+    
+    try {
+        const { dateTimeStr } = parseNotionDateTime(item.date);
+        const dateObj = parseISO(dateTimeStr);
+        
+        if (isValid(dateObj)) {
+            timeStr = format(dateObj, 'HH:mm');
+            dateStr = format(dateObj, 'yyyy-MM-dd');
+        }
+    } catch (e) {
+        // 靜默處理錯誤，避免 App 崩潰
+    }
+    // -------------------
 
     return (
         <div className={cn(
-            // 把 bg-white 換成 bg-gradient-to-br from-white to-emerald-50
+            // 維持你喜歡的：漸層白底 + 鼠尾草綠邊框 + 立體陰影 (shadow-md)
             "relative mb-4 rounded-2xl bg-gradient-to-br from-white to-emerald-50 border border-emerald-100/50 shadow-md transition-all duration-300 overflow-hidden group hover:shadow-lg hover:border-emerald-200",
             isPast && "opacity-60 grayscale-[0.5]"
         )}>
@@ -80,7 +92,6 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         alt={item.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                     />
-                    {/* 圖片遮罩改淡一點，讓圖片亮一點 */}
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
             )}
@@ -92,9 +103,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                     <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-slate-50 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
                         {/* Time & Line */}
                         <div className="flex flex-col items-center min-w-[3rem]">
-                            {/* 修改重點 2: 時間改成深綠色 (text-emerald-700)，在白底上才看得清楚 */}
                             <span className="text-xs font-bold text-emerald-700 font-mono">{timeStr}</span>
-                            {/* 修改重點 3: 中間的線條改成極淡的綠色 (bg-emerald-100) */}
                             <div className="flex-1 w-0.5 bg-emerald-100 my-1 rounded-full min-h-[1.5rem]" />
                         </div>
 
@@ -106,38 +115,19 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                         <div className={cn("inline-flex items-center justify-center p-1.5 rounded-lg shadow-sm shrink-0", colorClass)}>
                                             {renderIcon()}
                                         </div>
-                                        {/* 修改重點 4: 標題改回深灰色 (text-slate-800) */}
                                         <h3 className="font-bold text-slate-800 text-base leading-tight">{item.title}</h3>
                                     </div>
                                 </div>
-                                {/* 修改 1: 地圖連結圖示改成 MapPin */}
+                                {/* 這裡恢復成單純的地圖連結 (ExternalLink) */}
                                 {item.maps && (
                                     <a
                                         href={item.maps}
                                         target="_blank"
                                         rel="noreferrer"
-                                        // 加入這個 onClick 很重要，防止點擊連結時同時打開對話框
                                         onClick={(e) => e.stopPropagation()}
                                         className="text-slate-300 hover:text-emerald-500 transition-colors p-1"
-                                        title="開啟地圖"
                                     >
-                                        <MapPin size={18} />
-                                    </a>
-                                )}
-
-                                {/* 修改 2: 新增檔案連結 (迴紋針圖示) */}
-                                {/* 假設你的 item 裡現在有了 'file' 這個屬性 */}
-                                {item.file && (
-                                    <a
-                                        href={item.file}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        // 使用跟地圖一樣的樣式，保持一致性
-                                        className="text-slate-300 hover:text-emerald-500 transition-colors p-1 ml-1"
-                                        title="開啟附件檔案"
-                                    >
-                                        <Paperclip size={18} />
+                                        <ExternalLink size={18} />
                                     </a>
                                 )}
                             </div>
