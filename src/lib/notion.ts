@@ -78,9 +78,16 @@ export const getTripData = cache(async () => {
     if (!apiKey || !databaseId) {
         throw new Error(`Missing Notion credentials. API Key: ${apiKey ? 'set' : 'missing'}, DB ID: ${databaseId ? 'set' : 'missing'}`);
     }
-
-    const notion = new Client({
+    
+const notion = new Client({
         auth: apiKey,
+        // ✨ 加入這段：告訴 Notion SDK 使用「不快取」的通訊方式
+        fetch: (url, options) => {
+            return fetch(url, {
+                ...options,
+                cache: 'no-store',
+            });
+        },
     });
 
     const { dataSourceId, dbIcon } = await getDataSourceId(notion, databaseId);
@@ -205,7 +212,16 @@ export const getPasswordConfig = cache(async () => {
 
     if (!apiKey || !databaseId) return null;
 
-    const notion = new Client({ auth: apiKey });
+const notion = new Client({ 
+        auth: apiKey,
+        // ✨ 一樣加入防快取設定
+        fetch: (url, options) => {
+            return fetch(url, {
+                ...options,
+                cache: 'no-store',
+            });
+        },
+    });
     const { dataSourceId } = await getDataSourceId(notion, databaseId);
 
     try {
