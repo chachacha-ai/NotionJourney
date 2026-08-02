@@ -4,7 +4,7 @@ import { cn } from '@/lib/utils';
 
 interface CurrencyWidgetProps {
     rate?: number;
-    currencyCode: string; // 現在可以接受 "DKK,SEK,EUR"[cite: 2]
+    currencyCode: string; // 現在可以接受 "DKK,SEK,EUR"
 }
 
 export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRate, currencyCode }) => {
@@ -15,8 +15,8 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
     // 2. 狀態管理
     const [activeCurrency, setActiveCurrency] = useState<string>(defaultCurrency);
     const [amount, setAmount] = useState<string>('');
-    const [exchangeRate, setExchangeRate] = useState<number>(initialRate || 9.1);[cite: 2]
-    const [isLoading, setIsLoading] = useState(false);[cite: 2]
+    const [exchangeRate, setExchangeRate] = useState<number>(initialRate || 9.1);
+    const [isLoading, setIsLoading] = useState(false);
 
     // 3. 第一次載入時，從 Local Storage 讀取上次的選擇
     useEffect(() => {
@@ -40,32 +40,32 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
     // 5. 抓取匯率邏輯 (改為監聽 activeCurrency)
     useEffect(() => {
         const fetchRate = async () => {
-            if (!activeCurrency || activeCurrency.length !== 3 || activeCurrency === 'CUR') return;[cite: 2]
+            if (!activeCurrency || activeCurrency.length !== 3 || activeCurrency === 'CUR') return;
 
-            setIsLoading(true);[cite: 2]
+            setIsLoading(true);
             try {
-                // 以 HKD 為基準抓取匯率[cite: 2]
-                const res = await fetch(`https://open.er-api.com/v6/latest/HKD`);[cite: 2]
-                const data = await res.json();[cite: 2]
+                // 以 HKD 為基準抓取匯率
+                const res = await fetch(`https://open.er-api.com/v6/latest/HKD`);
+                const data = await res.json();
 
-                // 1 HKD = X Target => 1 Target = 1/X HKD[cite: 2]
-                const rateToTarget = data.rates[activeCurrency.toUpperCase()];[cite: 2]
-                if (rateToTarget) {[cite: 2]
-                    const priceInHkd = 1 / rateToTarget;[cite: 2]
-                    setExchangeRate(priceInHkd);[cite: 2]
-                }[cite: 2]
+                // 1 HKD = X Target => 1 Target = 1/X HKD
+                const rateToTarget = data.rates[activeCurrency.toUpperCase()];
+                if (rateToTarget) {
+                    const priceInHkd = 1 / rateToTarget;
+                    setExchangeRate(priceInHkd);
+                }
             } catch (e) {
-                console.error("Rate fetch failed", e);[cite: 2]
+                console.error("Rate fetch failed", e);
             } finally {
-                setIsLoading(false);[cite: 2]
+                setIsLoading(false);
             }
         };
 
-        fetchRate();[cite: 2]
+        fetchRate();
     }, [activeCurrency]);
 
-    const targetVal = amount ? parseFloat(amount) : 1000;[cite: 2]
-    const calculated = (targetVal * exchangeRate).toFixed(0);[cite: 2]
+    const targetVal = amount ? parseFloat(amount) : 1000;
+    const calculated = (targetVal * exchangeRate).toFixed(0);
 
     return (
         <div className="h-full p-4 rounded-2xl bg-gradient-to-br from-slate-900 to-slate-800 text-white shadow-lg shadow-slate-200 flex flex-col relative overflow-hidden group">
@@ -108,21 +108,21 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
                         <input
                             type="text"
                             inputMode="decimal"
-                            value={amount ? parseFloat(amount).toLocaleString() : ''}[cite: 2]
+                            value={amount ? parseFloat(amount).toLocaleString() : ''}
                             onChange={(e) => {
-                                const val = e.target.value.replace(/,/g, '');[cite: 2]
-                                if (!isNaN(Number(val)) && val !== '') {[cite: 2]
-                                    setAmount(val);[cite: 2]
-                                } else if (val === '') {[cite: 2]
-                                    setAmount('');[cite: 2]
-                                }[cite: 2]
+                                const val = e.target.value.replace(/,/g, '');
+                                if (!isNaN(Number(val)) && val !== '') {
+                                    setAmount(val);
+                                } else if (val === '') {
+                                    setAmount('');
+                                }
                             }}
-                            placeholder="1,000"[cite: 2]
+                            placeholder="1,000"
                             className={cn(
-                                "w-full bg-transparent border-none font-bold placeholder-slate-700 text-white focus:outline-none p-0 tracking-tight font-mono transition-all duration-200",[cite: 2]
-                                (amount?.length || 0) >= 8 ? "text-lg" :[cite: 2]
-                                    (amount?.length || 0) >= 6 ? "text-xl" :[cite: 2]
-                                        "text-2xl"[cite: 2]
+                                "w-full bg-transparent border-none font-bold placeholder-slate-700 text-white focus:outline-none p-0 tracking-tight font-mono transition-all duration-200",
+                                (amount?.length || 0) >= 8 ? "text-lg" :
+                                    (amount?.length || 0) >= 6 ? "text-xl" :
+                                        "text-2xl"
                             )}
                         />
                     </div>
@@ -134,12 +134,12 @@ export const CurrencyWidget: React.FC<CurrencyWidgetProps> = ({ rate: initialRat
                     <div className="flex items-baseline justify-end gap-0.5">
                         <span className="text-xs font-medium text-slate-500">HK$</span>
                         <span className={cn(
-                            "font-bold text-emerald-400 tracking-tight truncate font-mono transition-all duration-200",[cite: 2]
-                            calculated.length >= 8 ? "text-lg" :[cite: 2]
-                                calculated.length >= 6 ? "text-xl" :[cite: 2]
-                                    "text-2xl"[cite: 2]
+                            "font-bold text-emerald-400 tracking-tight truncate font-mono transition-all duration-200",
+                            calculated.length >= 8 ? "text-lg" :
+                                calculated.length >= 6 ? "text-xl" :
+                                    "text-2xl"
                         )}>
-                            {parseFloat(calculated).toLocaleString()}[cite: 2]
+                            {parseFloat(calculated).toLocaleString()}
                         </span>
                     </div>
                 </div>
