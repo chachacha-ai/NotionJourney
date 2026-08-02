@@ -25,6 +25,7 @@ export interface ItineraryItem {
     maps: string;
     img: string | null;
     description: string;
+    descriptionRaw?: any[]; // 🌟 新增：用來保留 Notion 的原始格式 (粗體、換行等)
     hasContent: boolean;
     icon?: string | null;
     file?: string | null;
@@ -161,7 +162,6 @@ export const getTripData = cache(async () => {
     const itinerary: ItineraryItem[] = results
         .filter(r => {
             const typeName = r.properties.type?.select?.name;
-            const title = r.properties.title?.title[0]?.plain_text || 'No Title';
             
             if (typeName === 'journey') {
                 return true;
@@ -194,6 +194,7 @@ export const getTripData = cache(async () => {
                 maps: page.properties.maps?.url || '',
                 img: coverUrl,
                 description: description,
+                descriptionRaw: page.properties.description?.rich_text || [], // 🌟 新增：把包含格式的原始資料傳給前台
                 hasContent: true,
                 icon,
             };
