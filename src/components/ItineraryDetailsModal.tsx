@@ -11,9 +11,10 @@ import {
 import { ItineraryItem } from '@/lib/notion';
 import { Loader2, Info } from 'lucide-react';
 
-// 🌟 新增：Notion 格式翻譯機
+// 🌟 升級版：與剛剛相同的 Markdown 翻譯機
 const renderRichText = (richTextArr: any[]) => {
     if (!richTextArr || !Array.isArray(richTextArr)) return null;
+    
     return richTextArr.map((t, i) => {
         let cls = "";
         if (t.annotations?.bold) cls += " font-bold";
@@ -23,9 +24,68 @@ const renderRichText = (richTextArr: any[]) => {
         if (t.annotations?.code) cls += " font-mono bg-primary/10 text-primary px-1 py-0.5 rounded text-sm";
         if (t.annotations?.color && t.annotations.color !== 'default') cls += " text-primary"; 
         
+        const content = t.text?.content || "";
+        
+        if (t.href) {
+            return (
+                <a key={i} href={t.href} target="_blank" rel="noreferrer" className={cls + " text-blue-600 underline font-bold hover:opacity-80"}>
+                    {content}
+                </a>
+            );
+        }
+
+        const lines = content.split('\n');
+        
         return (
-            <span key={i} className={cls} style={{ whiteSpace: 'pre-wrap' }}>
-                {t.text?.content}
+            <span key={i} className={cls}>
+                {lines.map((line, lineIndex) => {
+                    let isH2 = false;
+                    let isH3 = false;
+                    let textToParse = line;
+
+                    if (textToParse.startsWith('## ')) {
+                        isH2 = true;
+                        textToParse = textToParse.substring(3);
+                    } else if (textToParse.startsWith('### ')) {
+                        isH3 = true;
+                        textToParse = textToParse.substring(4);
+                    }
+
+                    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+                    const parts = [];
+                    let lastIndex = 0;
+                    let match;
+
+                    while ((match = linkRegex.exec(textToParse)) !== null) {
+                        if (match.index > lastIndex) {
+                            parts.push(textToParse.substring(lastIndex, match.index));
+                        }
+                        parts.push(
+                            <a key={match.index} href={match[2]} target="_blank" rel="noreferrer" className="text-blue-600 underline font-bold hover:opacity-80">
+                                {match[1]}
+                            </a>
+                        );
+                        lastIndex = linkRegex.lastIndex;
+                    }
+                    if (lastIndex < textToParse.length) {
+                        parts.push(textToParse.substring(lastIndex));
+                    }
+
+                    let lineNode: React.ReactNode = <>{parts}</>;
+                    
+                    if (isH2) {
+                        lineNode = <span className="block text-lg font-black text-primary mt-3 mb-1">{lineNode}</span>;
+                    } else if (isH3) {
+                        lineNode = <span className="block text-base font-bold text-primary/90 mt-2 mb-1">{lineNode}</span>;
+                    }
+
+                    return (
+                        <React.Fragment key={lineIndex}>
+                            {lineNode}
+                            {lineIndex < lines.length - 1 && !isH2 && !isH3 && <br />}
+                        </React.Fragment>
+                    );
+                })}
             </span>
         );
     });
@@ -72,7 +132,6 @@ export default function ItineraryDetailsModal({ item, isOpen, onClose }: Itinera
                     <DialogTitle className="text-2xl font-black text-gray-900 leading-tight">
                         {item.title}
                     </DialogTitle>
-                    {/* 🎨 聽從中央指揮：把原本的 text-red-600 改成了 text-primary */}
                     <DialogDescription className="text-sm font-medium text-primary mt-1">
                         行程詳細資訊
                     </DialogDescription>
@@ -85,8 +144,7 @@ export default function ItineraryDetailsModal({ item, isOpen, onClose }: Itinera
                                 <Info className="w-4 h-4" />
                                 <span className="text-[10px] font-black uppercase tracking-widest">簡要描述</span>
                             </div>
-                            <div className="text-gray-700 leading-relaxed font-medium">
-                                {/* 🌟 讓簡要描述支援粗體和換行 */}
+                            <div className="text-gray-700 leading-relaxed font-medium break-words">
                                 {item.descriptionRaw ? renderRichText(item.descriptionRaw) : <span style={{ whiteSpace: 'pre-wrap' }}>{item.description}</span>}
                             </div>
                         </div>
@@ -101,8 +159,7 @@ export default function ItineraryDetailsModal({ item, isOpen, onClose }: Itinera
                         ) : blocks.length > 0 ? (
                             <div className="space-y-3">
                                 {blocks.map((block: any) => (
-                                    <div key={block.id} className="text-gray-800">
-                                        {/* 🌟 讓所有內文區塊都掛上翻譯機，恢復原本的格式！ */}
+                                    <div key={block.id} className="text-gray-800 break-words">
                                         {block.type === 'paragraph' && (
                                             <p className="text-base leading-relaxed">
                                                 {renderRichText(block.paragraph.rich_text)}
