@@ -7,9 +7,10 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, Dialog
 import { Button } from '@/components/ui/button';
 import { NotionBlockRenderer } from '@/components/NotionBlockRenderer';
 
-// 🌟 新增：Notion 格式翻譯機
+// 🌟 升級版：支援 Markdown (##, ###, [text](url)) 和 Notion 原生格式的翻譯機
 export const renderRichText = (richTextArr: any[]) => {
     if (!richTextArr || !Array.isArray(richTextArr)) return null;
+    
     return richTextArr.map((t, i) => {
         let cls = "";
         if (t.annotations?.bold) cls += " font-bold";
@@ -19,10 +20,74 @@ export const renderRichText = (richTextArr: any[]) => {
         if (t.annotations?.code) cls += " font-mono bg-primary/10 text-primary px-1 py-0.5 rounded text-sm";
         if (t.annotations?.color && t.annotations.color !== 'default') cls += " text-primary"; 
         
-        // whiteSpace: 'pre-wrap' 確保 \n 能夠正常換行
+        const content = t.text?.content || "";
+        
+        // 1. 如果是 Notion 原生設定的連結
+        if (t.href) {
+            return (
+                <a key={i} href={t.href} target="_blank" rel="noreferrer" className={cls + " text-blue-600 underline font-bold hover:opacity-80"}>
+                    {content}
+                </a>
+            );
+        }
+
+        // 2. 解析手動輸入的 Markdown [文字](網址) 與 ## 標題
+        const lines = content.split('\n');
+        
         return (
-            <span key={i} className={cls} style={{ whiteSpace: 'pre-wrap' }}>
-                {t.text?.content}
+            <span key={i} className={cls}>
+                {lines.map((line, lineIndex) => {
+                    let isH2 = false;
+                    let isH3 = false;
+                    let textToParse = line;
+
+                    // 判斷是否為標題
+                    if (textToParse.startsWith('## ')) {
+                        isH2 = true;
+                        textToParse = textToParse.substring(3);
+                    } else if (textToParse.startsWith('### ')) {
+                        isH3 = true;
+                        textToParse = textToParse.substring(4);
+                    }
+
+                    // 尋找 [文字](網址)
+                    const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+                    const parts = [];
+                    let lastIndex = 0;
+                    let match;
+
+                    while ((match = linkRegex.exec(textToParse)) !== null) {
+                        if (match.index > lastIndex) {
+                            parts.push(textToParse.substring(lastIndex, match.index));
+                        }
+                        parts.push(
+                            <a key={match.index} href={match[2]} target="_blank" rel="noreferrer" className="text-blue-600 underline font-bold hover:opacity-80">
+                                {match[1]}
+                            </a>
+                        );
+                        lastIndex = linkRegex.lastIndex;
+                    }
+                    if (lastIndex < textToParse.length) {
+                        parts.push(textToParse.substring(lastIndex));
+                    }
+
+                    let lineNode: React.ReactNode = <>{parts}</>;
+                    
+                    // 根據標題級別套用樣式
+                    if (isH2) {
+                        lineNode = <span className="block text-lg font-black text-primary mt-3 mb-1">{lineNode}</span>;
+                    } else if (isH3) {
+                        lineNode = <span className="block text-base font-bold text-primary/90 mt-2 mb-1">{lineNode}</span>;
+                    }
+
+                    return (
+                        <React.Fragment key={lineIndex}>
+                            {lineNode}
+                            {/* 如果不是標題，才補上換行符號 (因為標題本來就會自己佔滿一行) */}
+                            {lineIndex < lines.length - 1 && !isH2 && !isH3 && <br />}
+                        </React.Fragment>
+                    );
+                })}
             </span>
         );
     });
@@ -173,8 +238,8 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
                         <div className="text-slate-600 leading-relaxed text-sm">
                             {item.description && (
-                                <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100">
-                                    {/* 🌟 讓卡片裡的描述支援粗體和換行！ */}
+                                <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100 break-words">
+                                    {/* 呼叫我們升級後的翻譯機 */}
                                     {item.descriptionRaw ? renderRichText(item.descriptionRaw) : <span style={{ whiteSpace: 'pre-wrap' }}>{item.description}</span>}
                                 </div>
                             )}
