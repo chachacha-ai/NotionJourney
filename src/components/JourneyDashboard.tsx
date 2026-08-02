@@ -26,7 +26,7 @@ interface JourneyDashboardProps {
 const toFloatingDate = (dateStr: string): Date => {
     const { dateTimeStr } = parseNotionDateTime(dateStr);
     return parseISO(dateTimeStr);
-};
+}
 
 export default function JourneyDashboard({ data, requiredPassword }: JourneyDashboardProps) {
     const { metadata, itinerary } = data;
@@ -103,8 +103,6 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                 key={dateStr}
                                 className={cn(
                                     "rounded-2xl transition-all duration-300 overflow-hidden border shadow-sm",
-                                    // 修改重點 1: 恢復原本的低調邊框 (border-blue-100 或 white)，移除綠色邊框
-                                    // 這樣展開時就不會整個發綠光，保持乾淨
                                     isExpanded ? "bg-white/60 border-blue-100 shadow-md" : "bg-white/40 border-white/60 hover:bg-white/60"
                                 )}
                             >
@@ -116,21 +114,22 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                         <div className="flex items-center gap-2 mb-1">
                                             <span className={cn(
                                                 "text-xs font-bold uppercase tracking-widest",
-                                                // 這裡的文字維持綠色是可以的，因為它是重點
-                                                isToday ? "text-emerald-600" : "text-slate-400"
+                                                // 🎨 這裡的文字改成藍色
+                                                isToday ? "text-blue-700" : "text-slate-400"
                                             )}>
                                                 第 {index + 1} 天
                                             </span>
                                             {isToday && (
-                                                // 修改重點 2: 「今天」的標籤維持綠色，因為這是重點資訊
-                                                <span className="bg-emerald-100 text-emerald-600 text-[10px] font-bold px-2 py-0.5 rounded-full">
+                                                // 🎨 「今天」的標籤改成藍色背景與藍色文字
+                                                <span className="bg-blue-100 text-blue-700 text-[10px] font-bold px-2 py-0.5 rounded-full">
                                                     今天
                                                 </span>
                                             )}
                                         </div>
                                         <h3 className={cn(
                                             "text-lg font-semibold",
-                                            isToday ? "text-emerald-900" : "text-slate-700"
+                                            // 🎨 今天的標題顏色改成深海軍藍
+                                            isToday ? "text-blue-900" : "text-slate-700"
                                         )}>
                                             {format(dateObj, 'MMM do', { locale: zhTW })} - {format(dateObj, 'EEEE', { locale: zhTW })}
                                         </h3>
@@ -142,7 +141,6 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
                                         </span>
                                         <div className={cn(
                                             "p-1 rounded-full transition-transform duration-300",
-                                            // 修改重點 3: 箭頭也改回低調的藍灰色，或者淡綠色
                                             isExpanded ? "bg-slate-100 text-slate-600 rotate-180" : "text-slate-400"
                                         )}>
                                             <ChevronDown size={20} />
@@ -317,7 +315,8 @@ export default function JourneyDashboard({ data, requiredPassword }: JourneyDash
     };
 
     return (
-        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-emerald-100 flex justify-center">
+        // 🎨 這裡的 selection:bg-emerald-100 改成了 selection:bg-blue-100 (反白文字時的背景色)
+        <div className="min-h-screen bg-slate-50 font-sans text-slate-900 selection:bg-blue-100 flex justify-center">
             <div className="w-full max-w-[768px] h-[100dvh] bg-[#F4F7F4] shadow-2xl relative overflow-hidden transition-colors duration-300">
                 <TopBar
                     title={metadata.city ? `${metadata.title} - ${metadata.city}` : metadata.title}
