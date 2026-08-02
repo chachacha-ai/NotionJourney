@@ -4,9 +4,10 @@
 @custom-variant dark (&:is(.dark *));
 
 :root {
-  --primary: oklch(0.5 0.2 25);
-  /* Japan Red */
-  --primary-light: #c0392b;
+  /* 🌊 海軍藍主題 (Navy Blue) */
+  --primary: #0f172a;       /* 深海軍藍 (Tailwind slate-900) */
+  --primary-light: #1e3a8a; /* 亮海軍藍 (Tailwind blue-900) */
+  
   --secondary: oklch(0.97 0 0);
   --card-bg: rgba(255, 255, 255, 0.85);
   --glass-bg: rgba(255, 255, 255, 0.7);
