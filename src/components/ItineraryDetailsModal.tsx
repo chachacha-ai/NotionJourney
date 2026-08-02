@@ -11,11 +11,11 @@ import {
 import { ItineraryItem } from '@/lib/notion';
 import { Loader2, Info } from 'lucide-react';
 
-// 🌟 升級版：與剛剛相同的 Markdown 翻譯機
+// 🌟 修復 TypeScript 嚴格檢查：補上 (t: any, i: number) 以及 (line: string, lineIndex: number)
 const renderRichText = (richTextArr: any[]) => {
     if (!richTextArr || !Array.isArray(richTextArr)) return null;
     
-    return richTextArr.map((t, i) => {
+    return richTextArr.map((t: any, i: number) => {
         let cls = "";
         if (t.annotations?.bold) cls += " font-bold";
         if (t.annotations?.italic) cls += " italic";
@@ -38,7 +38,7 @@ const renderRichText = (richTextArr: any[]) => {
         
         return (
             <span key={i} className={cls}>
-                {lines.map((line, lineIndex) => {
+                {lines.map((line: string, lineIndex: number) => {
                     let isH2 = false;
                     let isH3 = false;
                     let textToParse = line;
