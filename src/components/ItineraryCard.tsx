@@ -40,7 +40,6 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
             <Card
                 onClick={handleCardClick}
                 className={cn(
-                    // 🌟 聽從中央指揮：卡片背景強制使用 primary 主色
                     "!border-none shadow-sm hover:shadow-md transition-all duration-300 rounded-3xl overflow-hidden !bg-primary",
                     (item.hasContent || item.description) ? "cursor-pointer active:scale-[0.98]" : "cursor-default"
                 )}
@@ -54,7 +53,6 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                             className="object-cover opacity-90 hover:opacity-100 transition-opacity"
                         />
                         <div className="absolute top-4 left-4">
-                            {/* 🌟 聽從中央指揮：圖片左上角時間標籤文字改為 primary */}
                             <span className="bg-white/95 backdrop-blur-md px-3 py-1.5 rounded-2xl text-xs font-bold text-primary shadow-sm">
                                 {timeStr}
                             </span>
@@ -66,7 +64,6 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                     <div className="flex items-start justify-between mb-3">
                         <div className="space-y-1">
                             {!item.img && (
-                                {/* 🌟 聽從中央指揮：無圖片時的時間標籤改為半透明白色 */}
                                 <span className="text-sm font-black text-white/80 tracking-tighter block mb-1">
                                     {timeStr}
                                 </span>
@@ -90,7 +87,6 @@ export default function ItineraryCard({ item }: ItineraryCardProps) {
                             asChild
                             variant="outline"
                             onClick={(e) => e.stopPropagation()}
-                            // 🌟 聽從中央指揮：底部按鈕文字顏色使用 primary
                             className="w-full justify-center gap-2 text-xs font-bold rounded-2xl h-11 border-transparent bg-white text-primary hover:bg-white/90 hover:text-primary transition-all active:scale-[0.98] mt-2"
                         >
                             <a href={resolveMapUrl(item.maps)} target="_blank">
