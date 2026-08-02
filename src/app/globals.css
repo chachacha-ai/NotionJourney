@@ -5,8 +5,8 @@
 
 :root {
 /* 🌊 調整為更亮、更飽和的海軍藍 (接近 Tailwind 的 blue-800) */
-  --primary: #1e40af;       
-  --primary-light: #3b82f6;
+  --primary: #133458;       
+  --primary-light: #1e40af;
   
   --secondary: oklch(0.97 0 0);
   --card-bg: rgba(255, 255, 255, 0.85);
