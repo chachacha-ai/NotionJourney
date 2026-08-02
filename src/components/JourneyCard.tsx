@@ -7,11 +7,11 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, Dialog
 import { Button } from '@/components/ui/button';
 import { NotionBlockRenderer } from '@/components/NotionBlockRenderer';
 
-// 🌟 升級版：支援 Markdown (##, ###, [text](url)) 和 Notion 原生格式的翻譯機
+// 🌟 修復 TypeScript 嚴格檢查：補上 (t: any, i: number) 以及 (line: string, lineIndex: number)
 export const renderRichText = (richTextArr: any[]) => {
     if (!richTextArr || !Array.isArray(richTextArr)) return null;
     
-    return richTextArr.map((t, i) => {
+    return richTextArr.map((t: any, i: number) => {
         let cls = "";
         if (t.annotations?.bold) cls += " font-bold";
         if (t.annotations?.italic) cls += " italic";
@@ -22,7 +22,6 @@ export const renderRichText = (richTextArr: any[]) => {
         
         const content = t.text?.content || "";
         
-        // 1. 如果是 Notion 原生設定的連結
         if (t.href) {
             return (
                 <a key={i} href={t.href} target="_blank" rel="noreferrer" className={cls + " text-blue-600 underline font-bold hover:opacity-80"}>
@@ -31,17 +30,15 @@ export const renderRichText = (richTextArr: any[]) => {
             );
         }
 
-        // 2. 解析手動輸入的 Markdown [文字](網址) 與 ## 標題
         const lines = content.split('\n');
         
         return (
             <span key={i} className={cls}>
-                {lines.map((line, lineIndex) => {
+                {lines.map((line: string, lineIndex: number) => {
                     let isH2 = false;
                     let isH3 = false;
                     let textToParse = line;
 
-                    // 判斷是否為標題
                     if (textToParse.startsWith('## ')) {
                         isH2 = true;
                         textToParse = textToParse.substring(3);
@@ -50,7 +47,6 @@ export const renderRichText = (richTextArr: any[]) => {
                         textToParse = textToParse.substring(4);
                     }
 
-                    // 尋找 [文字](網址)
                     const linkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
                     const parts = [];
                     let lastIndex = 0;
@@ -73,7 +69,6 @@ export const renderRichText = (richTextArr: any[]) => {
 
                     let lineNode: React.ReactNode = <>{parts}</>;
                     
-                    // 根據標題級別套用樣式
                     if (isH2) {
                         lineNode = <span className="block text-lg font-black text-primary mt-3 mb-1">{lineNode}</span>;
                     } else if (isH3) {
@@ -83,7 +78,6 @@ export const renderRichText = (richTextArr: any[]) => {
                     return (
                         <React.Fragment key={lineIndex}>
                             {lineNode}
-                            {/* 如果不是標題，才補上換行符號 (因為標題本來就會自己佔滿一行) */}
                             {lineIndex < lines.length - 1 && !isH2 && !isH3 && <br />}
                         </React.Fragment>
                     );
@@ -239,7 +233,6 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         <div className="text-slate-600 leading-relaxed text-sm">
                             {item.description && (
                                 <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100 break-words">
-                                    {/* 呼叫我們升級後的翻譯機 */}
                                     {item.descriptionRaw ? renderRichText(item.descriptionRaw) : <span style={{ whiteSpace: 'pre-wrap' }}>{item.description}</span>}
                                 </div>
                             )}
