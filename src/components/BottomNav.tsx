@@ -31,15 +31,14 @@ export const BottomNav: React.FC<BottomNavProps> = ({ currentTab, onTabChange })
                             onClick={() => onTabChange(tab.id)}
                             className={cn(
                                 "flex flex-col items-center justify-center w-full py-2 transition-all duration-200 active:scale-95",
-                                // 修改 1: 把 text-blue-600 改成 text-emerald-700 (深綠色)
-                                // 未選中時保持灰色 (text-slate-400)
-                                isActive ? "text-emerald-700" : "text-slate-400 hover:text-slate-600"
+                                // 🌟 聽從中央指揮：選中時使用 primary 主色
+                                isActive ? "text-primary" : "text-slate-400 hover:text-slate-600"
                             )}
                         >
                             <div className={cn(
                                 "p-1.5 rounded-xl transition-all mb-1",
-                                // 修改 2: 把 bg-blue-50 改成 bg-emerald-50 (淡綠色背景泡泡)
-                                isActive && "bg-emerald-50"
+                                // 🌟 背景泡泡使用 10% 透明度的主色
+                                isActive && "bg-primary/10"
                             )}>
                                 <Icon size={isActive ? 24 : 22} strokeWidth={isActive ? 2.5 : 2} />
                             </div>
