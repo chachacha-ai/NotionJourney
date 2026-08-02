@@ -7,6 +7,27 @@ import { Dialog, DialogContent, DialogTrigger, DialogHeader, DialogTitle, Dialog
 import { Button } from '@/components/ui/button';
 import { NotionBlockRenderer } from '@/components/NotionBlockRenderer';
 
+// 🌟 新增：Notion 格式翻譯機
+export const renderRichText = (richTextArr: any[]) => {
+    if (!richTextArr || !Array.isArray(richTextArr)) return null;
+    return richTextArr.map((t, i) => {
+        let cls = "";
+        if (t.annotations?.bold) cls += " font-bold";
+        if (t.annotations?.italic) cls += " italic";
+        if (t.annotations?.strikethrough) cls += " line-through";
+        if (t.annotations?.underline) cls += " underline";
+        if (t.annotations?.code) cls += " font-mono bg-primary/10 text-primary px-1 py-0.5 rounded text-sm";
+        if (t.annotations?.color && t.annotations.color !== 'default') cls += " text-primary"; 
+        
+        // whiteSpace: 'pre-wrap' 確保 \n 能夠正常換行
+        return (
+            <span key={i} className={cls} style={{ whiteSpace: 'pre-wrap' }}>
+                {t.text?.content}
+            </span>
+        );
+    });
+};
+
 const TYPE_ICONS: Record<string, any> = {
     transport: Plane,
     hotel: Hotel,
@@ -68,27 +89,20 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
     try {
         const { dateTimeStr } = parseNotionDateTime(item.date);
         const dateObj = parseISO(dateTimeStr);
-        
         if (isValid(dateObj)) {
             timeStr = format(dateObj, 'HH:mm');
             dateStr = format(dateObj, 'yyyy-MM-dd');
         }
-    } catch (e) {
-    }
+    } catch (e) {}
 
     return (
         <div className={cn(
-            // 🌟 聽從中央指揮：卡片漸層與邊框改為 primary
             "relative mb-4 rounded-2xl bg-gradient-to-br from-white to-primary/5 border border-primary/20 shadow-md transition-all duration-300 overflow-hidden group hover:shadow-lg hover:border-primary/40",
             isPast && "opacity-60 grayscale-[0.5]"
         )}>
             {item.img && !hideImage && (
                 <div className="h-20 w-full relative overflow-hidden">
-                    <img
-                        src={item.img}
-                        alt={item.title}
-                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                    />
+                    <img src={item.img} alt={item.title} className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" />
                     <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent" />
                 </div>
             )}
@@ -99,9 +113,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                 <DialogTrigger asChild>
                     <div className={cn("p-2.5 flex gap-3 cursor-pointer hover:bg-slate-50 transition-colors", item.img && !hideImage ? "" : "pt-3")}>
                         <div className="flex flex-col items-center min-w-[3rem]">
-                            {/* 🌟 聽從中央指揮：時間文字顏色 */}
                             <span className="text-xs font-bold text-primary font-mono">{timeStr}</span>
-                            {/* 🌟 聽從中央指揮：時間軸線顏色 */}
                             <div className="flex-1 w-0.5 bg-primary/20 my-1 rounded-full min-h-[1.5rem]" />
                         </div>
 
@@ -116,14 +128,7 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                                     </div>
                                 </div>
                                 {item.maps && (
-                                    <a
-                                        href={item.maps}
-                                        target="_blank"
-                                        rel="noreferrer"
-                                        onClick={(e) => e.stopPropagation()}
-                                        // 🌟 聽從中央指揮：地圖按鈕 hover 顏色
-                                        className="text-slate-300 hover:text-primary transition-colors p-1"
-                                    >
+                                    <a href={item.maps} target="_blank" rel="noreferrer" onClick={(e) => e.stopPropagation()} className="text-slate-300 hover:text-primary transition-colors p-1">
                                         <ExternalLink size={18} />
                                     </a>
                                 )}
@@ -160,7 +165,6 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
                     <div className="p-6 pt-4 flex-1 overflow-y-auto">
                         <div className="flex items-center gap-2 text-slate-500 bg-slate-50 p-3 rounded-xl border border-slate-100 mb-6">
-                            {/* 🌟 聽從中央指揮：彈跳視窗內的時間標籤 */}
                             <div className="font-mono font-bold text-primary bg-primary/10 px-2 py-1 rounded border border-primary/20">
                                 {timeStr}
                             </div>
@@ -169,7 +173,10 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
 
                         <div className="text-slate-600 leading-relaxed text-sm">
                             {item.description && (
-                                <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100">{item.description}</div>
+                                <div className="mb-4 text-base p-3 bg-slate-50 text-slate-700 rounded-lg border border-slate-100">
+                                    {/* 🌟 讓卡片裡的描述支援粗體和換行！ */}
+                                    {item.descriptionRaw ? renderRichText(item.descriptionRaw) : <span style={{ whiteSpace: 'pre-wrap' }}>{item.description}</span>}
+                                </div>
                             )}
 
                             {isLoading && (
@@ -186,7 +193,6 @@ export const JourneyCard: React.FC<JourneyCardProps> = ({ item, isPast = false, 
                         </div>
 
                         {item.maps && (
-                            // 🌟 聽從中央指揮：底部打開地圖按鈕
                             <Button asChild className="w-full rounded-xl gap-2 font-bold h-12 text-base shadow-lg shadow-primary/30 bg-primary hover:bg-primary/90 mt-6" size="lg">
                                 <a href={item.maps} target="_blank" rel="noreferrer">
                                     <MapPin size={18} />
